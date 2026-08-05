@@ -1,3 +1,4 @@
+# FORCED_REFRESH_V2
 name: Generazione Automatica Mappe PMTiles
 
 on:
@@ -12,18 +13,15 @@ jobs:
       contents: write
 
     steps:
-      # 1. Scarica il codice del repository
       - name: Checkout del codice
         uses: actions/checkout@v4
 
-      # 2. Installa Java 21
       - name: Configura Java Runtime
         uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: "21"
 
-      # 3. Scarica i file ed esegui la compilazione con i download ausiliari attivi (Riga Singola)
       - name: Scarica dati e Genera file PMTiles
         run: |
           echo "⬇️ Scarico il compilatore Planetiler..."
@@ -35,7 +33,6 @@ jobs:
           echo "⚙️ Avvio la compilazione con download automatico dei layer idrografici di supporto..."
           java -Xmx4g -jar planetiler.jar --osm_path=centro-italia.osm.pbf --output=italia_centro.pmtiles --nodemap-type=sparse --storage=mmap --download
 
-      # 4. Crea la Release ed inserisce il file della mappa
       - name: Crea Release e Carica Mappe
         uses: softprops/action-gh-release@v2
         with:
@@ -46,3 +43,4 @@ jobs:
           files: italia_centro.pmtiles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
