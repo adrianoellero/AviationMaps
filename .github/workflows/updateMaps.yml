@@ -9,34 +9,40 @@ jobs:
   build-maps:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Dichiarazione esplicita dei permessi di scrittura nel workflow
+      contents: write
 
     steps:
       # 1. Scarica il codice del repository
       - name: Checkout del codice
         uses: actions/checkout@v4
 
-      # 2. Installa Java (Aggiornato alla v5 per allineamento a Node 24)
+      # 2. Installa Java 21
       - name: Configura Java Runtime
         uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: "21"
 
-      # 3. Scarica il compilatore Planetiler con indirizzo completo
+      # 3. Scarica il compilatore Planetiler
       - name: Scarica Planetiler
         run: |
           wget https://github.com
 
-      # 4. Scarica i dati geografici grezzi del Centro Italia da Geofabrik
+      # 4. Scarica i dati geografici grezzi da Geofabrik
       - name: Scarica dati geografici grezzi
         run: |
           wget -O centro-italia.osm.pbf https://geofabrik.de
 
-      # 5. Compila il file .pmtiles ad alta risoluzione
+      # 5. Compila il file .pmtiles in MODALITÀ LOW MEMORY (Anti-Crash)
+      # Usiamo -Xmx4g per lasciare spazio al sistema operativo ed eseguiamo planetiler
+      # con i parametri nodemap-type=sparse e storage=mmap per spostare i calcoli su hard disk
       - name: Genera file PMTiles vettoriale
         run: |
-          java -Xmx6g -jar planetiler.jar --osm_path=centro-italia.osm.pbf --output=italia_centro.pmtiles
+          java -Xmx4g -jar planetiler.jar \
+            --osm_path=centro-italia.osm.pbf \
+            --output=italia_centro.pmtiles \
+            --nodemap-type=sparse \
+            --storage=mmap
 
       # 6. Crea la Release ed inserisce il file della mappa
       - name: Crea Release e Carica Mappe
@@ -50,4 +56,5 @@ jobs:
             italia_centro.pmtiles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
