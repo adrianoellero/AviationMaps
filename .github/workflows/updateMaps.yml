@@ -1,0 +1,42 @@
+name: BUILD_DEFINITIVA_V1
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-maps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout del codice
+        uses: actions/checkout@v4
+
+      - name: Configura Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Scarica dati e Genera file PMTiles
+        run: |
+          echo "⬇️ Scarico il file binario di Planetiler..."
+          wget -q https://github.com
+          
+          echo "⬇️ Scarico i dati OSM dell'Italia Centrale..."
+          wget -q -O centro-italia.osm.pbf https://geofabrik.de
+          
+          echo "⚙️ Avvio la compilazione geometrica ad alta risoluzione con download dei layer idrografici ausiliari..."
+          java -Xmx4g -jar planetiler.jar --osm_path=centro-italia.osm.pbf --output=italia_centro.pmtiles --nodemap-type=sparse --storage=mmap --download
+
+      - name: Crea Release ed Inserisci la Mappa
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: database-mappe-aero
+          name: Database Mappe Aeronautiche Offline
+          draft: false
+          prerelease: false
+          files: italia_centro.pmtiles
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
