@@ -23,19 +23,19 @@ jobs:
           distribution: "temurin"
           java-version: "21"
 
-      # 3. Scarica il compilatore Planetiler
-      - name: Scarica Planetiler
-        run: wget https://github.com
+      # 3. Unico step: Scarica i file ed esegui la compilazione nello stesso ambiente
+      - name: Scarica dati e Genera file PMTiles
+        run: |
+          echo "⬇️ Scarico il compilatore Planetiler..."
+          wget -q https://github.com/onthegomap/planetiler/releases/latest/download/planetiler.jar
+          
+          echo "⬇️ Scarico la mappa grezza da Geofabrik..."
+          wget -q -O centro-italia.osm.pbf https://geofabrik.de
+          
+          echo "⚙️ Avvio la compilazione vettoriale ad alta risoluzione..."
+          java -Xmx4g -jar planetiler.jar --osm_path=centro-italia.osm.pbf --output=italia_centro.pmtiles --nodemap-type=sparse --storage=mmap
 
-      # 4. Scarica i dati geografici grezzi da Geofabrik
-      - name: Scarica dati geografici grezzi
-        run: wget -O centro-italia.osm.pbf https://geofabrik.de
-
-      # 5. Compila il file .pmtiles (Tutto su una sola riga per evitare bug di interpretazione)
-      - name: Genera file PMTiles vettoriale
-        run: java -Xmx4g -jar planetiler.jar --osm_path=centro-italia.osm.pbf --output=italia_centro.pmtiles --nodemap-type=sparse --storage=mmap
-
-      # 6. Crea la Release ed inserisce il file della mappa
+      # 4. Crea la Release ed inserisce il file della mappa
       - name: Crea Release e Carica Mappe
         uses: softprops/action-gh-release@v2
         with:
@@ -46,5 +46,6 @@ jobs:
           files: italia_centro.pmtiles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
 
