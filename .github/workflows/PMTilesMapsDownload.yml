@@ -31,7 +31,7 @@ jobs:
           echo "⚙️ Starting vector tile compilation via internal area selector..."
           # ZERO EXTERNAL URLS FOR DATASETS: Planetiler automatically locates, downloads,
           # and processes the latest 'italy' region slice along with lake and coastline geometries.
-          java -Xmx4g -jar planetiler.jar --area=italy --output=italy-center.pmtiles --download
+          java -Xmx4g -jar planetiler.jar --area=italy --output=italy_center.pmtiles --download
 
       # Manual Git Tag deployment to bypass restricted automated environment tokens
       - name: Push Git Tag manually
@@ -48,6 +48,6 @@ jobs:
           name: Offline Aviation Maps Database
           draft: false
           prerelease: false
-          files: italia_centro.pmtiles
+          files: italy_center.pmtiles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
