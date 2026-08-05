@@ -1,0 +1,37 @@
+name: AVIAZIONE_OK_V1
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-maps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Scarico il codice
+        uses: actions/checkout@v4
+
+      - name: Configuro Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Scarico Strumenti e Genero Mappa
+        run: |
+          wget -O esecutore.jar https://github.com
+          wget -O mappa_grezza.pbf https://geofabrik.de
+          java -Xmx4g -jar esecutore.jar --osm_path=mappa_grezza.pbf --output=italia_centro.pmtiles --nodemap-type=sparse --storage=mmap --download
+
+      - name: Carica Mappa nelle Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mappe-vfr
+          name: Database Mappe Aeronautiche
+          draft: false
+          prerelease: false
+          files: italia_centro.pmtiles
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
