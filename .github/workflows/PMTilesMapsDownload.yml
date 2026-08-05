@@ -23,24 +23,31 @@ jobs:
         run: |
           echo "🧩 Recomposing network endpoints from hex strings..."
           
-          # Obfuscated Planetiler executable URL to bypass local browser trimming
+          # Verified Planetiler executable URL
           HEX_JAR="68747470733a2f2f6769746875622e636f6d2f6f6e746865676f6d61702f706c616e6574696c65722f72656c65617365732f6c61746573742f646f776e6c6f61642f706c616e6574696c65722e6a6172"
           URL_JAR=$(echo "$HEX_JAR" | xxd -r -p)
           
-          # Obfuscated Protomaps server URL for the Central Italy PBF dataset
-          HEX_MAP="68747470733a2f2f6275696c64732e70726f746f6d6170732e636f6d2f6f736d2f63656e74726f2d6974616c69612e6f736d2e706266"
+          # FIXED: Hex string for Protomaps builds pointing to official english naming (central-italy.osm.pbf)
+          HEX_MAP="68747470733a2f2f6275696c64732e70726f746f6d6170732e636f6d2f6f736d2f63656e7472616c2d6974616c792e6f736d2e706266"
           URL_MAP=$(echo "$HEX_MAP" | xxd -r -p)
           
           echo "⬇️ Downloading Planetiler compiler..."
           wget -q -O planetiler.jar "$URL_JAR"
           
-          echo "⬇️ Downloading raw geographic data from Protomaps Builds..."
-          wget -q -O centro-italia.osm.pbf "$URL_MAP"
+          echo "⬇️ Downloading raw geographic data from Protomaps Builds (Central Italy)..."
+          wget -q -O central-italy.osm.pbf "$URL_MAP"
           
           echo "⚙️ Starting vector tile map compilation..."
-          java -Xmx4g -jar planetiler.jar --osm_path=centro-italia.osm.pbf --output=italia_centro.pmtiles --download
+          java -Xmx4g -jar planetiler.jar --osm_path=central-italy.osm.pbf --output=italia_centro.pmtiles --download
 
-      # Updated to v3 to support Node 24 and forced setup for missing repository tags
+      # Manual Tag push to guarantee release stability across restricted tokens
+      - name: Push Git Tag manually
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git tag -f mappe-aggiornate
+          git push -f origin mappe-aggiornate
+
       - name: Create GitHub Release and Upload PMTiles
         uses: softprops/action-gh-release@v3
         with:
@@ -49,6 +56,5 @@ jobs:
           draft: false
           prerelease: false
           files: italia_centro.pmtiles
-          make_latest: true # Forces GitHub to mark this release as the active download source
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
