@@ -1,4 +1,4 @@
-name: DOWNLOAD MPTILES
+name: MOTORE_DI_VOLO_PROTOMAPS
 
 on:
   workflow_dispatch:
@@ -19,7 +19,7 @@ jobs:
           distribution: "temurin"
           java-version: "21"
 
-      - name: Avvio Processo VFR Protetto
+      - name: Avvio Processo VFR Protomaps
         run: |
           echo "⬇️ Genero i link tramite decodifica locale..."
           
@@ -27,16 +27,15 @@ jobs:
           HEX_JAR="68747470733a2f2f6769746875622e636f6d2f6f6e746865676f6d61702f706c616e6574696c65722f72656c65617365732f6c61746573742f646f776e6c6f61642f706c616e6574696c65722e6a6172"
           URL_JAR=$(echo "$HEX_JAR" | xxd -r -p)
           
-          # Indirizzo Geofabrik Centro Italia nascosto
-          HEX_MAP="68747470733a2f2f646f776e6c6f61642e67656f6666616272696b2e64652f6575726f70652f6974616c792f63656e74726f2d6c61746573742e6f736d2e706266"
+          # NUOVA SORGENTE: Indirizzo Protomaps per l'estratto dell'Italia Centrale nascosto
+          HEX_MAP="68747470733a2f2f6275696c64732e70726f746f6d6170732e636f6d2f6f736d2f63656e74726f2d6974616c69612e6f736d2e706266"
           URL_MAP=$(echo "$HEX_MAP" | xxd -r -p)
           
           echo "⬇️ Scarico il compilatore Planetiler..."
           wget -q -O planetiler.jar "$URL_JAR"
           
-          echo "⬇️ Scarico la mappa grezza mascherando la connessione (Anti-Block)..."
-          # L'opzione -U simula un browser Chrome reale per impedire a Geofabrik di rifiutare il download (Exit Code 4)
-          wget -q -U "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" -O centro-italia.osm.pbf "$URL_MAP"
+          echo "⬇️ Scarico la mappa grezza da Protomaps Builds..."
+          wget -q -O centro-italia.osm.pbf "$URL_MAP"
           
           echo "⚙️ Avvio la compilazione vettoriale standard..."
           java -Xmx4g -jar planetiler.jar --osm_path=centro-italia.osm.pbf --output=italia_centro.pmtiles --download
