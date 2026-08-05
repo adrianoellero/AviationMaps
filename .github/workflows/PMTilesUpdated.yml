@@ -21,21 +21,21 @@ jobs:
 
       - name: Ricomposizione Link e Avvio Motore
         run: |
-          echo "🧩 Ricompongo gli indirizzi di rete per evitare i filtri locali..."
+          echo "🧩 Ricompongo gli indirizzi con i sottodomini corretti..."
           
           BASE_GH="https://github.com"
           PATH_JAR="/onthegomap/planetiler/releases/latest/download/planetiler.jar"
           URL_COMPILATORE="${BASE_GH}${PATH_JAR}"
           
-          BASE_GF="https://geofabrik.de"
+          BASE_GF="https://download.geofabrik.de"
           PATH_PBF="/europe/italy/centro-latest.osm.pbf"
           URL_MAPPA="${BASE_GF}${PATH_PBF}"
           
           echo "⬇️ Scarico il jar completo..."
-          wget -O planetiler.jar "$URL_COMPILATORE"
+          wget -q -O planetiler.jar "$URL_COMPILATORE"
           
           echo "⬇️ Scarico la mappa grezza..."
-          wget -O centro-italia.osm.pbf "$URL_MAPPA"
+          wget -q -O centro-italia.osm.pbf "$URL_MAPPA"
           
           echo "⚙️ Avvio la compilazione vettoriale..."
           java -Xmx4g -jar planetiler.jar --osm_path=centro-italia.osm.pbf --output=italia_centro.pmtiles --nodemap-type=sparse --storage=mmap --download
@@ -43,8 +43,8 @@ jobs:
       - name: Carica Mappa nelle Releases
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: database-mappe-aero
-          name: Database Mappe Aeronautiche Offline
+          tag_name: mappe-aggiornate
+          name: Aggiornamento Mappe Offline
           draft: false
           prerelease: false
           files: italia_centro.pmtiles
