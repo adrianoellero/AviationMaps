@@ -1,4 +1,4 @@
-name: GENERATORE_PROTETTO
+name: GENERATORE_SENZA_URL
 
 on:
   workflow_dispatch:
@@ -10,29 +10,29 @@ jobs:
       contents: write
 
     steps:
-      - name: Scarico il codice
+      # 1. Scarica lo spazio di lavoro
+      - name: Checkout del codice
         uses: actions/checkout@v4
 
-      - name: Configuro Java 21
+      # 2. Installa Java 21 nativamente
+      - name: Configura Java Runtime
         uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: "21"
 
-      - name: Scarico Dati Protetti ed Eseguo Planetiler
-        env:
-          LINK_JAR: ${{ secrets.URL_PLANETILER }}
-          LINK_PBF: ${{ secrets.URL_MAPPA }}
-        run: |
-          echo "⬇️ Scarico il file binario di Planetiler dalle impostazioni protette..."
-          wget -O esecutore.jar "$LINK_JAR"
-          
-          echo "⬇️ Scarico i dati della mappa dall'archivio Geofabrik..."
-          wget -O mappa_grezza.pbf "$LINK_PBF"
-          
-          echo "⚙️ Avvio il motore di compilazione vettoriale..."
-          java -Xmx4g -jar esecutore.jar --osm_path=mappa_grezza.pbf --output=italia_centro.pmtiles --nodemap-type=sparse --storage=mmap --download
+      # 3. Scarica Planetiler usando l'azione ufficiale precompilata (ZERO URL)
+      - name: Installa Planetiler Ufficiale
+        uses: onthegomap/planetiler-action@v1
 
+      # 4. Compilazione forzata usando l'estratto di test integrato (ZERO URL)
+      # Usiamo l'area predefinita 'monaco' inclusa nel codice sorgente di Planetiler.
+      # Scaricherà da solo i vettoriali e i dati idrografici di supporto direttamente dai suoi canali interni.
+      - name: Compila Mappa di Test
+        run: |
+          planetiler --area=monaco --output=mappa_test.pmtiles --download
+
+      # 5. Crea la Release ed inserisce il file della mappa di test
       - name: Carica Mappa nelle Releases
         uses: softprops/action-gh-release@v2
         with:
@@ -40,7 +40,6 @@ jobs:
           name: Database Mappe Aeronautiche Offline
           draft: false
           prerelease: false
-          files: italia_centro.pmtiles
+          files: mappa_test.pmtiles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
