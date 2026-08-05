@@ -1,0 +1,53 @@
+name: Generazione Automatica Mappe PMTiles
+
+# Avvia l'automazione su comando manuale o in automatico il 1° del mese alle 00:00
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 1 * *"
+
+jobs:
+  build-maps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Permesso fondamentale per creare la Release e caricare i file
+
+    steps:
+      # 1. Scarica il codice del tuo repository (la tua webapp)
+      - name: Checkout del codice
+        uses: actions/checkout@v4
+
+      # 2. Installa Java (richiesto da Planetiler per compilare le mappe)
+      - name: Configura Java Runtime
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      # 3. Scarica Planetiler (il compilatore di mappe vettoriali gratuito)
+      - name: Scarica Planetiler
+        run: |
+          wget https://github.com
+
+      # 4. Scarica i dati OSM aggiornati (Esempio: Centro Italia da Geofabrik)
+      - name: Scarica dati geografici grezzi
+        run: |
+          wget -O centro-italia.osm.pbf https://geofabrik.de
+
+      # 5. Compila il file .pmtiles ad ALTA RISOLUZIONE
+      - name: Genera file PMTiles vettoriale
+        run: |
+          java -Xmx6g -jar planetiler.jar --osm_path=centro-italia.osm.pbf --output=italia_centro.pmtiles
+
+      # 6. Crea la Release su GitHub e carica il file generato automaticamente
+      - name: Crea Release e Carica Mappe
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mappe-aggiornate
+          name: Aggiornamento Mappe Offline
+          draft: false
+          prerelease: false
+          files: |
+            italia_centro.pmtiles
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
