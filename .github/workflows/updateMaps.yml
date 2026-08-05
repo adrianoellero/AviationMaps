@@ -1,4 +1,4 @@
-name: BUILD_DEFINITIVA_V1
+name: COMPILAZIONE_BLINDATA
 
 on:
   workflow_dispatch:
@@ -19,15 +19,11 @@ jobs:
           distribution: "temurin"
           java-version: "21"
 
-      - name: Scarica dati e Genera file PMTiles
+      - name: Reset Cache e Compilazione Lineare
         run: |
-          echo "⬇️ Scarico il file binario di Planetiler..."
-          wget -q https://github.com
-          
-          echo "⬇️ Scarico i dati OSM dell'Italia Centrale..."
-          wget -q -O centro-italia.osm.pbf https://geofabrik.de
-          
-          echo "⚙️ Avvio la compilazione geometrica ad alta risoluzione con download dei layer idrografici ausiliari..."
+          rm -f planetiler.jar centro-italia.osm.pbf italia_centro.pmtiles
+          wget -O planetiler.jar https://github.com
+          wget -O centro-italia.osm.pbf https://geofabrik.de
           java -Xmx4g -jar planetiler.jar --osm_path=centro-italia.osm.pbf --output=italia_centro.pmtiles --nodemap-type=sparse --storage=mmap --download
 
       - name: Crea Release ed Inserisci la Mappa
