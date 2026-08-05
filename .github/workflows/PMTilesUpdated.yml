@@ -1,4 +1,4 @@
-name: AVIAZIONE_OK_V1
+name: GENERATORE_PROTETTO
 
 on:
   workflow_dispatch:
@@ -19,19 +19,28 @@ jobs:
           distribution: "temurin"
           java-version: "21"
 
-      - name: Scarico Strumenti e Genero Mappa
+      - name: Scarico Dati Protetti ed Eseguo Planetiler
+        env:
+          LINK_JAR: ${{ secrets.URL_PLANETILER }}
+          LINK_PBF: ${{ secrets.URL_MAPPA }}
         run: |
-          wget -O esecutore.jar https://github.com
-          wget -O mappa_grezza.pbf https://geofabrik.de
+          echo "⬇️ Scarico il file binario di Planetiler dalle impostazioni protette..."
+          wget -O esecutore.jar "$LINK_JAR"
+          
+          echo "⬇️ Scarico i dati della mappa dall'archivio Geofabrik..."
+          wget -O mappa_grezza.pbf "$LINK_PBF"
+          
+          echo "⚙️ Avvio il motore di compilazione vettoriale..."
           java -Xmx4g -jar esecutore.jar --osm_path=mappa_grezza.pbf --output=italia_centro.pmtiles --nodemap-type=sparse --storage=mmap --download
 
       - name: Carica Mappa nelle Releases
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: mappe-vfr
-          name: Database Mappe Aeronautiche
+          tag_name: database-mappe-aero
+          name: Database Mappe Aeronautiche Offline
           draft: false
           prerelease: false
           files: italia_centro.pmtiles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
