@@ -1,0 +1,52 @@
+name: SOLUZIONE_BLINDATA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-maps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Scarico il codice
+        uses: actions/checkout@v4
+
+      - name: Configuro Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Ricomposizione Link e Avvio Motore
+        run: |
+          echo "🧩 Ricompongo gli indirizzi con i sottodomini corretti..."
+          
+          BASE_GH="https://github.com"
+          PATH_JAR="/onthegomap/planetiler/releases/latest/download/planetiler.jar"
+          URL_COMPILATORE="${BASE_GH}${PATH_JAR}"
+          
+          BASE_GF="https://geofabrik.de"
+          PATH_PBF="/europe/italy/centro-latest.osm.pbf"
+          URL_MAPPA="${BASE_GF}${PATH_PBF}"
+          
+          echo "⬇️ Scarico il jar completo..."
+          wget -q -O planetiler.jar "$URL_COMPILATORE"
+          
+          echo "⬇️ Scarico la mappa grezza..."
+          wget -q -O centro-italia.osm.pbf "$URL_MAPPA"
+          
+          echo "⚙️ Avvio la compilazione vettoriale standard..."
+          java -Xmx4g -jar planetiler.jar --osm_path=centro-italia.osm.pbf --output=italia_centro.pmtiles --download
+
+      - name: Carica Mappa nelle Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mappe-aggiornate
+          name: Aggiornamento Mappe Offline
+          draft: false
+          prerelease: false
+          files: italia_centro.pmtiles
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
