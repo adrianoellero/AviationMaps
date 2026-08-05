@@ -25,24 +25,15 @@ jobs:
 
       # 3. Scarica il compilatore Planetiler
       - name: Scarica Planetiler
-        run: |
-          wget https://github.com
+        run: wget https://github.com
 
       # 4. Scarica i dati geografici grezzi da Geofabrik
       - name: Scarica dati geografici grezzi
-        run: |
-          wget -O centro-italia.osm.pbf https://geofabrik.de
+        run: wget -O centro-italia.osm.pbf https://geofabrik.de
 
-      # 5. Compila il file .pmtiles in MODALITÀ LOW MEMORY (Anti-Crash)
-      # Usiamo -Xmx4g per lasciare spazio al sistema operativo ed eseguiamo planetiler
-      # con i parametri nodemap-type=sparse e storage=mmap per spostare i calcoli su hard disk
+      # 5. Compila il file .pmtiles (Tutto su una sola riga per evitare bug di interpretazione)
       - name: Genera file PMTiles vettoriale
-        run: |
-          java -Xmx4g -jar planetiler.jar \
-            --osm_path=centro-italia.osm.pbf \
-            --output=italia_centro.pmtiles \
-            --nodemap-type=sparse \
-            --storage=mmap
+        run: java -Xmx4g -jar planetiler.jar --osm_path=centro-italia.osm.pbf --output=italia_centro.pmtiles --nodemap-type=sparse --storage=mmap
 
       # 6. Crea la Release ed inserisce il file della mappa
       - name: Crea Release e Carica Mappe
@@ -52,8 +43,7 @@ jobs:
           name: Aggiornamento Mappe Offline
           draft: false
           prerelease: false
-          files: |
-            italia_centro.pmtiles
+          files: italia_centro.pmtiles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
