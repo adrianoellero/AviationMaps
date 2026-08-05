@@ -23,7 +23,7 @@ jobs:
           distribution: "temurin"
           java-version: "21"
 
-      # 3. Scarica i file ed esegui la compilazione con i download ausiliari attivi
+      # 3. Scarica i file ed esegui la compilazione con i download ausiliari attivi (Riga Singola)
       - name: Scarica dati e Genera file PMTiles
         run: |
           echo "⬇️ Scarico il compilatore Planetiler..."
@@ -33,12 +33,7 @@ jobs:
           wget -q -O centro-italia.osm.pbf https://geofabrik.de
           
           echo "⚙️ Avvio la compilazione con download automatico dei layer idrografici di supporto..."
-          java -Xmx4g -jar planetiler.jar \
-            --osm_path=centro-italia.osm.pbf \
-            --output=italia_centro.pmtiles \
-            --nodemap-type=sparse \
-            --storage=mmap \
-            --download
+          java -Xmx4g -jar planetiler.jar --osm_path=centro-italia.osm.pbf --output=italia_centro.pmtiles --nodemap-type=sparse --storage=mmap --download
 
       # 4. Crea la Release ed inserisce il file della mappa
       - name: Crea Release e Carica Mappe
