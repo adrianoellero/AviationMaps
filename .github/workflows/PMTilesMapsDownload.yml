@@ -44,10 +44,10 @@ jobs:
       - name: Create GitHub Release and Upload PMTiles
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: mappe-aggiornate
+          tag_name: updated-maps
           name: Offline Aviation Maps Database
           draft: false
           prerelease: false
-          files: italy_center.pmtiles
+          files: center-italy.pmtiles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
