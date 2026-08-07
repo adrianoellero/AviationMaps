@@ -1,4 +1,4 @@
-name: PMTiles World Maps Download
+name: PMTiles World Maps Download 
 
 on:
   workflow_dispatch:
