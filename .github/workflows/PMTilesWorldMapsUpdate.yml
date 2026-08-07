@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        area: [france, spain, switzerland, austria, slovenia]
+        area: [france, spain]
 
     steps:
       - name: Checkout repository code
