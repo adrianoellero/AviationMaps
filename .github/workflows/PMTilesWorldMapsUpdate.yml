@@ -25,7 +25,7 @@ jobs:
           distribution: "temurin"
           java-version: "21"
 
-      - name: Download Compiler and Build Map via Internal Engine
+          - name: Download Compiler and Build Map via Internal Engine
         run: |
           echo "🧩 Recomposing Planetiler core URL..."
           HEX_JAR="68747470733a2f2f6769746875622e636f6d2f6f6e746865676f6d61702f706c616e6574696c65722f72656c65617365732f6c61746573742f646f776e6c6f61642f706c616e6574696c65722e6a6172"
@@ -34,9 +34,15 @@ jobs:
           echo "⬇️ Downloading Planetiler engine..."
           wget -q -O planetiler.jar "$URL_JAR"
           
-          # === UPDATED: Reads the specific country dynamically from the matrix variable ===
+          # === AGGIORNATO: Aggiunti i parametri di timeout per aggirare i blocchi del server OSM ===
           echo "⚙️ Starting vector tile compilation via internal area selector..."
-          java -Xmx4g -jar planetiler.jar --area=${{ matrix.area }} --output=${{ matrix.area }}.pmtiles --download
+          java -Xmx4g -jar planetiler.jar \
+            --area=${{ matrix.area }} \
+            --output=${{ matrix.area }}.pmtiles \
+            --download \
+            --download-timeout=5m \
+            --download-threads=2 \
+            --fetch-wikidata=false
 
            # Manual Git Tag deployment to bypass restricted automated environment tokens
       - name: Push Git Tag manually
