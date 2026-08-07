@@ -38,13 +38,30 @@ jobs:
           echo "⚙️ Starting vector tile compilation via internal area selector..."
           java -Xmx4g -jar planetiler.jar --area=${{ matrix.area }} --output=${{ matrix.area }}.pmtiles --download
 
-      # Manual Git Tag deployment to bypass restricted automated environment tokens
+           # Manual Git Tag deployment to bypass restricted automated environment tokens
       - name: Push Git Tag manually
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git tag -f updated-maps
           git push -f origin updated-maps
+
+      # === AGGIUNTO: Controllo e split dinamico se la nazione corrente supera i 2GB ===
+      - name: Split Files Over 2GB Automatically
+        run: |
+          MAX_SIZE=2147483648
+          TARGET_FILE="${{ matrix.area }}.pmtiles"
+          
+          if [ -f "$TARGET_FILE" ]; then
+            FILE_SIZE=$(stat -c%s "$TARGET_FILE")
+            if [ "$FILE_SIZE" -ge "$MAX_SIZE" ]; then
+              echo "⚠️ $TARGET_FILE è più grande di 2GB ($FILE_SIZE byte). Avvio lo split..."
+              split -b 1500m -d --additional-suffix=.part "$TARGET_FILE" "$TARGET_FILE."
+              rm "$TARGET_FILE"
+            else
+              echo "✅ $TARGET_FILE è sotto il limite di 2GB ($FILE_SIZE byte). Caricamento standard."
+            fi
+          fi
 
       - name: Create GitHub Release and Upload PMTiles
         uses: softprops/action-gh-release@v3
@@ -53,7 +70,10 @@ jobs:
           name: Offline Aviation Maps Database
           draft: false
           prerelease: false
-          # === UPDATED: Uploads the specific .pmtiles file built by this runner ===
-          files: ${{ matrix.area }}.pmtiles
+          # === AGGIORNATO: Carica la mappa intera OPPURE i suoi pezzi se è stata splittata ===
+          files: |
+            ${{ matrix.area }}.pmtiles
+            ${{ matrix.area }}.pmtiles.part*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
